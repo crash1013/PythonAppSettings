@@ -170,7 +170,7 @@ class appProfile:
                 return section[dataName]
         return None
 
-    def set_section_data(self, sectionName, dataName, dataValue):
+    def set_section_data(self, sectionName: str, dataName: str, dataValue: Any):
         """
         set_section_data writes the dataValue named dataName to sectionName.
         
@@ -180,16 +180,15 @@ class appProfile:
         Both sectionName and dataName are checked as string types.
         If the check fails None is returned
         """
-        result = True
         section = self.get_section(sectionName)
-        if section != None:
+        if isinstance(section, dict):
             if isinstance(dataName, str):
                 if dataName in section:
                     section[dataName] = dataValue
                     return True
-        return None
+        return False
 
-    def write_profile(self, sectionName, keyName, newValue):
+    def write_profile(self, sectionName: str, keyName: str, newValue: Any):
         """
         write_profile writes the newValue named keyName to sectionName.
         
@@ -199,12 +198,12 @@ class appProfile:
         """
  
         section = self.get_section(sectionName)
-        if section == None:
+        if not isinstance(section, dict):
             self.profile_text.append({"section": sectionName, keyName : newValue})
         else:
             section[keyName] = newValue
 
-    def read_profile(self, sectionName, keyName, defaultValue):
+    def read_profile(self, sectionName: str, keyName: str, defaultValue: Any):
         """
         read_profile returns the data named keyName from sectionName.
         
@@ -214,8 +213,10 @@ class appProfile:
         """
 
         section = self.get_section(sectionName)
-        if section == None:
+        if not isinstance(section, dict):
             self.profile_text.append({"section": sectionName, keyName : defaultValue})
+            return defaultValue
+        elif not isinstance(keyName, str):
             return defaultValue
         elif not keyName in section:
                 section[keyName] = defaultValue
@@ -236,7 +237,6 @@ if __name__ == "__main__":
     import logging
 
 
-    LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
     logger: logging.Logger = init_logger("ProfileTest", level=logging.DEBUG)
     logger.info("***** Creating the profile *****")
     profile = appProfile()
