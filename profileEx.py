@@ -5,6 +5,8 @@ in the profile using command line arguments.
 
 """
 
+import logging
+import sys
 from appProfile import appProfile
 
 from typing import List, Dict, Any, Union
@@ -12,6 +14,8 @@ from dataclasses import dataclass, field
 
 
 import argparse
+
+from initLogger import init_logger
 
 @dataclass
 class arg_descriptor:
@@ -74,7 +78,7 @@ class profileEx(appProfile):
         return False
     
     def parse(self):
-        """ call like this apx.parse(list(sys.argv)) 
+        """ call like this apx.parse() 
             short options may have the option argument appended to the option -xargument or -x argument
             long options will fail if the option argument is appended to the option --optionargument will fail
             long option must be like this --option argument
@@ -93,3 +97,92 @@ class profileEx(appProfile):
                     self.set_section_data(d.section, d.item, False)
         
 
+if __name__ == "__main__":
+    from initLogger import init_logger
+    test_settings = [ {"section": "id", "application": "ProfileTest", "version": 1.0, "indent": 2},
+                      {"section": "general", "verbose": False} , 
+                      {"section" : "settings", 
+                       "testStr": "This is a test string", "testInt": 42, "testFloat": 3.14, "testBool": True, "testList": [1, 2, 3], "testDict": {"key": "value"}}
+                    ]
+    test_descriptors: list[arg_descriptor] = [
+        arg_descriptor(
+            section="id",
+            item="application",
+            short_option="a",
+            long_option="application",
+            enable_arg=True,
+            help_info="Set the application name"
+        ),
+        arg_descriptor(
+            section="general",
+            item="verbose",
+            short_option="v",
+            long_option="verbose",
+            enable_arg=False,
+            help_info="Enable verbose output"
+        ),
+        arg_descriptor(
+            section="settings",
+            item="testStr",
+            short_option="s",
+            long_option="testStr",
+            enable_arg=True,
+            help_info="Set the test string"
+        ),
+        arg_descriptor(
+            section="settings",
+            item="testInt",
+            short_option="i",
+            long_option="testInt",
+            enable_arg=True,
+            help_info="Set the test integer"
+        ),
+        arg_descriptor(
+            section="settings",
+            item="testFloat",
+            short_option="f",
+            long_option="testFloat",
+            enable_arg=True,
+            help_info="Set the test float"
+        ),
+        arg_descriptor(
+            section="settings",
+            item="testBool",
+            short_option="b",
+            long_option="testBool",
+            enable_arg=False,
+            help_info="Set the test boolean"
+        ),
+        arg_descriptor(
+            section="settings",
+            item="testList",
+            short_option="l",
+            long_option="testList",
+            enable_arg=True,
+            help_info="Set the test list"
+        ),
+        arg_descriptor(
+            section="settings",
+            item="testDict",
+            short_option="d",
+            long_option="testDict",
+            enable_arg=True,
+            help_info="Set the test dictionary"
+        )
+    ]
+    logger: logging.Logger = init_logger("ProfileTest", level=logging.DEBUG)
+    logger.info("***** Creating the profile *****")
+
+    apx = profileEx(descriptors=test_descriptors)
+    apx.set_app_name(sys.argv[0])
+    for s in test_settings:
+        for k, v in s.items():
+            logger.info(f"Setting section {s['section']}, item {k} to value {v}")
+            section = str(s["section"])
+            if k != "section":
+                logger.info(f"Setting section {section}, item {k} to value {v}")
+                apx.set_section_data(section, k, v)
+    apx.set_descriptors(test_descriptors)
+    logger.info("Loading the settings file")
+    apx.load_settings_file()
+    apx.parse()

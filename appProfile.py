@@ -247,7 +247,8 @@ if __name__ == "__main__":
 
    
     ver = profile.get_section_data("id", "version")
-    if ver is None:
+    if not isinstance(ver, float):
+        logger.warning("Version is not a float, setting to 0.0")
         ver = 0.0
 
     profile.write_profile(sectionName="settings", keyName="testStr", newValue="This is a test")
@@ -258,7 +259,7 @@ if __name__ == "__main__":
 
     saveOK = profile.store_settings_file()
     if not profile.load_settings_file():
-        print("Error opening the settings file")
+        logger.error("Error opening the settings file")
     
     logger.info("application: " + profile.read_profile("id", "application", "Unknown"))
     logger.info("version:     " + str(profile.read_profile("id", "version", 0.0)))
